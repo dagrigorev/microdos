@@ -1,37 +1,28 @@
 # Build Notes
 
-## Recommended path: EDK2
+## Primary path: EDK2
 
-Create an EDK2 application package and include the sources from this repository. The entry point is:
+Use EDK2 to produce the real firmware application:
 
-```cpp
-extern "C" EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable);
+```powershell
+.\scripts\build-edk2-windows.ps1 -Edk2Root C:\src\edk2 -Target DEBUG -ToolChain VS2022
 ```
 
-## Alternative path: LLVM/LLD
-
-A typical freestanding UEFI build uses PE/COFF output with subsystem EFI application. Exact commands differ by platform and toolchain.
-
-Expected output:
+Output:
 
 ```text
-EFI/BOOT/BOOTX64.EFI
+dist/esp/EFI/BOOT/BOOTX64.EFI
 ```
 
-Place the file on a FAT-formatted EFI System Partition.
+Full instructions: `docs/build-edk2.md`.
 
-## Test with QEMU
+## Host compile-check path
+
+The CMake build is only a syntax/structure check for the portable C++ layer:
 
 ```bash
-qemu-system-x86_64 \
-  -bios OVMF.fd \
-  -drive format=raw,file=fat:rw:esp
+cmake -S . -B build
+cmake --build build
 ```
 
-## Test with VirtualBox
-
-Create a VM with EFI enabled and attach a FAT disk image containing:
-
-```text
-/EFI/BOOT/BOOTX64.EFI
-```
+It does not produce a bootable EFI image.

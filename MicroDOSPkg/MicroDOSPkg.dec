@@ -1,0 +1,9 @@
+## @file
+#  MicroDOS EDK2 package declaration.
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = MicroDOSPkg
+  PACKAGE_GUID                   = 4E5B9D62-0D6A-4F76-9BC6-82D6F7B9F2A1
+  PACKAGE_VERSION                = 0.3
