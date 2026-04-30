@@ -5,7 +5,7 @@ namespace dosuefi {
 
 void Shell::run() {
     console_.clear();
-    console_.writeLine(u"DosUefiCpp 0.1 - UEFI-native DOS-compatible shell");
+    console_.writeLine(u"MicroDOS 0.1 - UEFI-native DOS-compatible shell");
     console_.writeLine(u"Type HELP for commands.");
     console_.writeLine();
 

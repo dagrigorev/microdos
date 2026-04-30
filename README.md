@@ -1,4 +1,4 @@
-# DosUefiCpp
+# MicroDOS
 
 A modern C++ foundation for a UEFI-native DOS-compatible micro-OS inspired by MS-DOS 1.x architecture.
 
