@@ -8,21 +8,29 @@ void Console::clear() {
     }
 }
 
-void Console::write(const char16_t* text) {
+void Console::write(CHAR16* text) {
     if (systemTable_.ConOut && systemTable_.ConOut->OutputString && text) {
         systemTable_.ConOut->OutputString(systemTable_.ConOut, text);
     }
 }
 
-void Console::writeLine(const char16_t* text) {
+void Console::writeLine(CHAR16* text) {
     write(text);
-    write(u"\r\n");
+    write(ToEfiString(u"\r\n"));
 }
 
-std::size_t Console::readLine(char16_t* buffer, std::size_t capacity) {
+void Console::write(const char16_t* text) {
+    this->write(ToEfiString(text));
+}
+
+void Console::writeLine(const char16_t* text) {
+    this->writeLine(ToEfiString(text));
+}
+
+UINTN Console::readLine(CHAR16* buffer, UINTN capacity) {
     if (!buffer || capacity == 0) return 0;
 
-    std::size_t length = 0;
+    UINTN length = 0;
     buffer[0] = u'\0';
 
     while (true) {
@@ -38,7 +46,7 @@ std::size_t Console::readLine(char16_t* buffer, std::size_t capacity) {
         }
 
         if (key.UnicodeChar == u'\r') {
-            write(u"\r\n");
+            write(ToEfiString(u"\r\n"));
             buffer[length] = u'\0';
             return length;
         }
@@ -47,7 +55,7 @@ std::size_t Console::readLine(char16_t* buffer, std::size_t capacity) {
             if (length > 0) {
                 --length;
                 buffer[length] = u'\0';
-                write(u"\b \b");
+                write(ToEfiString(u"\b \b"));
             }
             continue;
         }
@@ -56,7 +64,7 @@ std::size_t Console::readLine(char16_t* buffer, std::size_t capacity) {
             buffer[length++] = key.UnicodeChar;
             buffer[length] = u'\0';
             char16_t echo[2] = { key.UnicodeChar, u'\0' };
-            write(echo);
+            write(ToEfiString(echo));
         }
     }
 }

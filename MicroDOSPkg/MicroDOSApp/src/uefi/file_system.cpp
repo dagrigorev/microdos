@@ -12,7 +12,7 @@ EFI_STATUS UefiFileSystem::openRoot() {
     }
 
     EFI_LOADED_IMAGE_PROTOCOL* loadedImage = nullptr;
-    auto loadedGuid = EfiLoadedImageProtocolGuid();
+    auto loadedGuid = gEfiLoadedImageProtocolGuid;
     EFI_STATUS status = systemTable_.BootServices->HandleProtocol(
         imageHandle_, &loadedGuid, reinterpret_cast<void**>(&loadedImage));
     if (status != EFI_SUCCESS || !loadedImage || !loadedImage->DeviceHandle) {
@@ -20,7 +20,7 @@ EFI_STATUS UefiFileSystem::openRoot() {
     }
 
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* simpleFs = nullptr;
-    auto fsGuid = EfiSimpleFileSystemProtocolGuid();
+    auto fsGuid = gEfiLoadedImageProtocolGuid;
     status = systemTable_.BootServices->HandleProtocol(
         loadedImage->DeviceHandle, &fsGuid, reinterpret_cast<void**>(&simpleFs));
     if (status != EFI_SUCCESS || !simpleFs || !simpleFs->OpenVolume) {
@@ -30,7 +30,7 @@ EFI_STATUS UefiFileSystem::openRoot() {
     return simpleFs->OpenVolume(simpleFs, &root_);
 }
 
-EFI_STATUS UefiFileSystem::openPath(const char16_t* path, EFI_FILE_PROTOCOL** file) {
+EFI_STATUS UefiFileSystem::openPath(CHAR16* path, EFI_FILE_PROTOCOL** file) {
     if (!file) return EFI_INVALID_PARAMETER;
     *file = nullptr;
     EFI_STATUS status = openRoot();
@@ -45,23 +45,23 @@ EFI_STATUS UefiFileSystem::openPath(const char16_t* path, EFI_FILE_PROTOCOL** fi
 }
 
 void UefiFileSystem::writeDecimal(Console& console, UINT64 value) {
-    char16_t digits[32]{};
-    std::size_t used = 0;
+    CHAR16 digits[32]{};
+    UINTN used = 0;
     if (value == 0) {
         console.write(u"0");
         return;
     }
     while (value > 0 && used < 32) {
-        digits[used++] = static_cast<char16_t>(u'0' + (value % 10));
+        digits[used++] = static_cast<CHAR16>(L'0' + (value % 10));
         value /= 10;
     }
     while (used > 0) {
-        char16_t ch[2] = { digits[--used], u'\0' };
+        CHAR16 ch[2] = { digits[--used], u'\0' };
         console.write(ch);
     }
 }
 
-EFI_STATUS UefiFileSystem::listDirectory(Console& console, const char16_t* path) {
+EFI_STATUS UefiFileSystem::listDirectory(Console& console, CHAR16* path) {
     EFI_FILE_PROTOCOL* dir = nullptr;
     EFI_STATUS status = openPath(path, &dir);
     if (status != EFI_SUCCESS || !dir) return status;
@@ -91,7 +91,7 @@ EFI_STATUS UefiFileSystem::listDirectory(Console& console, const char16_t* path)
     return status == EFI_SUCCESS ? EFI_SUCCESS : status;
 }
 
-EFI_STATUS UefiFileSystem::printFile(Console& console, const char16_t* path) {
+EFI_STATUS UefiFileSystem::printFile(Console& console, CHAR16* path) {
     EFI_FILE_PROTOCOL* file = nullptr;
     EFI_STATUS status = openPath(path, &file);
     if (status != EFI_SUCCESS || !file) return status;
@@ -104,7 +104,7 @@ EFI_STATUS UefiFileSystem::printFile(Console& console, const char16_t* path) {
         if (size == 0) break;
 
         for (UINTN i = 0; i < size; ++i) {
-            char16_t ch[2] = { static_cast<char16_t>(buffer[i]), u'\0' };
+            CHAR16 ch[2] = { static_cast<CHAR16>(buffer[i]), u'\0' };
             if (buffer[i] == '\n') console.write(u"\r\n");
             else if (buffer[i] != '\r') console.write(ch);
         }

@@ -12,11 +12,11 @@ public:
 
     bool available() const { return root_ != nullptr; }
     EFI_STATUS openRoot();
-    EFI_STATUS listDirectory(Console& console, const char16_t* path);
-    EFI_STATUS printFile(Console& console, const char16_t* path);
+    EFI_STATUS listDirectory(Console& console, CHAR16* path);
+    EFI_STATUS printFile(Console& console, CHAR16* path);
 
 private:
-    EFI_STATUS openPath(const char16_t* path, EFI_FILE_PROTOCOL** file);
+    EFI_STATUS openPath(CHAR16* path, EFI_FILE_PROTOCOL** file);
     static void writeDecimal(Console& console, UINT64 value);
     static bool isSuccess(EFI_STATUS status) { return status == EFI_SUCCESS; }
 

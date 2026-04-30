@@ -18,6 +18,10 @@
   src/shell/shell.cpp
   src/fs/fat.cpp
 
+[Protocols]
+  gEfiLoadedImageProtocolGuid
+  gEfiSimpleFileSystemProtocolGuid
+
 [Packages]
   MdePkg/MdePkg.dec
   MicroDOSPkg/MicroDOSPkg.dec
