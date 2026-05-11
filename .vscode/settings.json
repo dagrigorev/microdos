@@ -1,0 +1,12 @@
+{
+  "files.associations": {
+    "*.hpp": "cpp",
+    "*.cpp": "cpp"
+  },
+  "C_Cpp.default.cppStandard": "c++20",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/kernel",
+    "${workspaceFolder}/boot/microboot"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "MicroDOS: Build standalone UEFI",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "${workspaceFolder}/scripts/build-standalone-uefi.ps1"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "MicroDOS: Run QEMU",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "${workspaceFolder}/scripts/run-qemu.ps1",
+        "-Build"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "MicroDOS: Host compile-check",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "${workspaceFolder}/scripts/build-host-check.ps1"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

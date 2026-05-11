@@ -1,64 +1,76 @@
-# MicroDOS
+# MicroDOS Standalone Boot
 
-MicroDOS is a modern C++ UEFI-native DOS-compatible micro-OS foundation inspired by the uploaded MS-DOS 1.25 source tree.
+This branch removes the EDK2 dependency from the MicroDOS bring-up path.
 
-It is **not** a direct binary port of MS-DOS. MS-DOS 1.x depends on 16-bit real mode, BIOS interrupts, segment registers, IVT, PSP layout, FCB APIs, and direct `.COM`/`.EXE` loading assumptions that do not exist in UEFI x86_64.
-
-The correct design is a compatibility rewrite:
+The first milestone is intentionally monolithic:
 
 ```text
-UEFI Platform Layer
-    -> DOS Kernel Services
-        -> FAT / File Abstraction
-            -> Command Shell
-                -> Optional 8086 .COM Emulator
+BOOTX64.EFI = MicroBoot loader + MicroDOS kernel
 ```
 
-## Current stage
+The loader is written against a tiny local UEFI ABI header, not EDK2. It initializes GOP framebuffer, captures a memory map, exits boot services, then calls `KernelMain(BootInfo*)`.
 
-Implemented foundation:
+## Build on Windows
 
-- EDK2 package: `MicroDOSPkg`.
-- UEFI application module: `MicroDOSApp.inf`.
-- `UefiMain` bridge to the C++ MicroDOS entry point.
-- Minimal UEFI type/protocol declarations.
-- Console abstraction over UEFI text output/input.
-- UEFI LoadedImageProtocol + SimpleFileSystemProtocol binding.
-- Interactive command shell.
-- Implemented commands: `HELP`, `CLS`, `ECHO`, `VER`, `MEM`, `EXIT`, `REM`, `DIR`, `TYPE`.
-- Recognized from `COMMAND.ASM`: `COPY`, `DEL`/`ERASE`, `REN`/`RENAME`, `PAUSE`, `DATE`, `TIME`.
-- DOS service boundary stubs.
-- FAT BPB parser foundation.
-- Source analysis docs for the uploaded MS-DOS 1.25 archive.
+Requirements:
 
-## Build with EDK2
+- LLVM with `clang++.exe` and `lld-link.exe`
+- QEMU for fast testing
+- OVMF firmware if your QEMU build does not include UEFI firmware
 
-Windows:
+Build:
 
 ```powershell
-.\scripts\build-edk2-windows.ps1 -Edk2Root C:\src\edk2 -Target DEBUG -ToolChain VS2022
+.\scripts\build-standalone-uefi.ps1
 ```
 
-Linux:
+Clean rebuild:
 
-```bash
-./scripts/build-edk2-linux.sh ~/src/edk2 DEBUG GCC5
+```powershell
+.\scripts\build-standalone-uefi.ps1 -Clean
 ```
 
-Expected output:
+Output:
 
 ```text
+dist/BOOTX64.EFI
 dist/esp/EFI/BOOT/BOOTX64.EFI
 ```
 
-See `docs/build-edk2.md` for full setup and QEMU/VirtualBox boot notes.
+## Run in QEMU
 
-## Source-guided compatibility target
-
-From `COMMAND.ASM`, the DOS 1.x internal command set is:
-
-```text
-DIR, RENAME, REN, ERASE, DEL, TYPE, REM, COPY, PAUSE, DATE, TIME
+```powershell
+.\scripts\run-qemu.ps1 -Build
 ```
 
-From `MSDOS.ASM`, the filesystem compatibility target is FAT12-style 8.3 directory handling with 32-byte directory entries and packed 12-bit FAT chains.
+If QEMU needs explicit OVMF:
+
+```powershell
+.\scripts\run-qemu.ps1 -Build -OvmfCode C:\path\to\OVMF_CODE.fd
+```
+
+## Host compile-check
+
+```powershell
+.\scripts\build-host-check.ps1
+```
+
+## Architecture
+
+```text
+boot/microboot/efi_min.hpp      minimal UEFI ABI definitions
+boot/microboot/main.cpp         standalone UEFI entry, GOP, memory map
+kernel/boot/boot_info.hpp       boot protocol between loader and kernel
+kernel/kernel.cpp               KernelMain
+kernel/platform/framebuffer     framebuffer backend
+kernel/platform/console         text console on framebuffer
+```
+
+## Why no EDK2
+
+The previous EDK2 path was blocked by unstable environment mixing VS2019, VS2022, VS2026, EDK2 BaseTools, NASM_PREFIX, and C++ type conflicts. This standalone path makes the boot chain deterministic and easier to debug.
+
+
+## Notes
+
+PowerShell scripts use argument arrays instead of Unix-style `\` line continuations. This keeps them valid in Windows PowerShell and PowerShell 7.
